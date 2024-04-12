@@ -28,6 +28,8 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var fileNameWithoutExtension = fileName.Replace(fileExtension, "");
             var pathWithoutFileName = path.Replace(fileName, "").TrimEnd(['\\', '/']);
             var searchPath = Path.Combine(rcloneMountPath, pathWithoutFileName);
+            var destFile = new FileInfo(destinationPath);
+            var destDir = destFile.Directory!;
 
             List<String> unWantedExtensions =
             [
@@ -52,6 +54,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var potentialFilePaths = new List<String>();
 
             var directoryInfo = new DirectoryInfo(searchPath);
+
             while (directoryInfo.Parent != null)
             {
                 potentialFilePaths.Add(directoryInfo.FullName);
@@ -82,13 +85,14 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
 
                 foreach (var potentialFilePath in potentialFilePaths)
                 {
-                    var potentialFilePathWithFileName = Path.Combine(potentialFilePath, fileName);
+                    var potentialFilePathWithFileName = Path.Combine(potentialFilePath);
 
                     _logger.Debug($"Searching {potentialFilePathWithFileName}...");
 
-                    if (File.Exists(potentialFilePathWithFileName))
+                    if (Directory.Exists(potentialFilePathWithFileName))
                     {
                         file = new(potentialFilePathWithFileName);
+
                         break;
                     }
                 }
@@ -106,23 +110,24 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             if (file == null)
             {
                 _logger.Debug($"Unable to find file in rclone mount. Folders available in {rcloneMountPath}: ");
+
                 try
                 {
                     var allFolders = FileHelper.GetDirectoryContents(rcloneMountPath);
 
                     _logger.Debug(allFolders);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.Error(ex.Message);
                 }
-                
+
                 throw new("Could not find file from rclone mount!");
             }
 
             _logger.Debug($"Found {file.FullName} at {file.FullName}");
 
-            var result = TryCreateSymbolicLink(file.FullName, destinationPath);
+            var result = TryCreateSymbolicLink(file.FullName, destDir.FullName);
 
             if (!result)
             {
@@ -135,10 +140,11 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         }
         catch (Exception ex)
         {
-            DownloadComplete?.Invoke(this, new()
-            {
-                Error = ex.Message
-            });
+            DownloadComplete?.Invoke(this,
+                                     new()
+                                     {
+                                         Error = ex.Message
+                                     });
 
             throw;
         }
@@ -167,7 +173,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         {
             File.CreateSymbolicLink(symlinkPath, sourcePath);
 
-            if (File.Exists(symlinkPath)) // Double-check that the link was created
+            if (Directory.Exists(symlinkPath)) // Double-check that the link was created
             {
                 _logger.Information($"Created symbolic link from {sourcePath} to {symlinkPath}");
 

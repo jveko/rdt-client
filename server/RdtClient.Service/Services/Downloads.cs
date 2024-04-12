@@ -60,11 +60,16 @@ public class Downloads(DownloadData downloadData)
         await downloadData.UpdateCompleted(downloadId, dateTime);
     }
 
+    public async Task UpdateErrorInRange(Dictionary<Guid, String> remoteIdRange)
+    {
+        await downloadData.UpdateErrorInRange(remoteIdRange);
+    }
+
     public async Task UpdateError(Guid downloadId, String? error)
     {
         await downloadData.UpdateError(downloadId, error);
     }
-    
+
     public async Task UpdateRetryCount(Guid downloadId, Int32 retryCount)
     {
         await downloadData.UpdateRetryCount(downloadId, retryCount);
@@ -74,12 +79,17 @@ public class Downloads(DownloadData downloadData)
     {
         await downloadData.UpdateRemoteId(downloadId, remoteId);
     }
-    
+
+    public async Task UpdateRemoteIdRange(Dictionary<Guid, String> remoteIdRange)
+    {
+        await downloadData.UpdateRemoteIdRange(remoteIdRange);
+    }
+
     public async Task DeleteForTorrent(Guid torrentId)
     {
         await downloadData.DeleteForTorrent(torrentId);
     }
-        
+
     public async Task Reset(Guid downloadId)
     {
         await downloadData.Reset(downloadId);

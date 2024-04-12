@@ -26,7 +26,6 @@ public static class DownloadHelper
         fileName = FileHelper.RemoveInvalidFileNameChars(fileName);
 
         var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !String.IsNullOrWhiteSpace(m.Path)).ToList();
-
         if (matchingTorrentFiles.Any())
         {
             var matchingTorrentFile = matchingTorrentFiles[0];
@@ -41,10 +40,10 @@ public static class DownloadHelper
             }
         }
 
-        if (!Directory.Exists(torrentPath))
-        {
-            Directory.CreateDirectory(torrentPath);
-        }
+        // if (!Directory.Exists(torrentPath))
+        // {
+        //     Directory.CreateDirectory(torrentPath);
+        // }
 
         var filePath = Path.Combine(torrentPath, fileName);
 
