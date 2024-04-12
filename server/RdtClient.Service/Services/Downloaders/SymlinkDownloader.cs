@@ -85,7 +85,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
 
                 foreach (var potentialFilePath in potentialFilePaths)
                 {
-                    var potentialFilePathWithFileName = Path.Combine(potentialFilePath);
+                    var potentialFilePathWithFileName = Path.Combine(potentialFilePath, fileNameWithoutExtension);
 
                     _logger.Debug($"Searching {potentialFilePathWithFileName}...");
 
