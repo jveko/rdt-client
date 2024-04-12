@@ -28,6 +28,8 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var pathWithoutFileName = path.TrimEnd(['\\', '/']).Split("/")[0].Replace(fileExtension, "");
             var searchPath = rcloneMountPath;
             var destFile = new FileInfo(destinationPath);
+            _logger.Debug($"searchPath {searchPath}");
+            _logger.Debug($"pathWithoutFileName {pathWithoutFileName}");
             // var destDirParent = destFile.Directory!.Parent!;
             // var destDirPlain = destFile.Name.TrimEnd(['\\', '/']).Replace(destFile.Extension, "");
             // var destDir = new DirectoryInfo(Path.Combine(destDirParent.FullName, destDirPlain));
@@ -55,6 +57,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var potentialFilePaths = new List<String>();
 
             var directoryInfo = new DirectoryInfo(searchPath);
+            _logger.Debug($"Destination Directory {destDir.FullName}");
 
             if (Directory.Exists(destDir.FullName))
             {
@@ -94,11 +97,12 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                 foreach (var potentialFilePath in potentialFilePaths)
                 {
                     var potentialFilePathWithFileName = Path.Combine(potentialFilePath, pathWithoutFileName);
-
+                    _logger.Debug($"Potential {potentialFilePath} |||||||| {pathWithoutFileName}");
                     _logger.Debug($"Searching {potentialFilePathWithFileName}...");
 
                     if (Directory.Exists(potentialFilePathWithFileName))
                     {
+                        _logger.Debug($"Found Potential {potentialFilePathWithFileName}");
                         file = new(potentialFilePathWithFileName);
 
                         break;
@@ -134,6 +138,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             }
 
             _logger.Debug($"Found {file.FullName} at {file.FullName}");
+            _logger.Debug($"Try Symlink {file.FullName} target {destDir.FullName}");
 
             var result = TryCreateSymbolicLink(file.FullName, destDir.FullName);
 
@@ -179,6 +184,8 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
     {
         try
         {
+            
+            
             File.CreateSymbolicLink(symlinkPath, sourcePath);
 
             if (Directory.Exists(symlinkPath)) // Double-check that the link was created
