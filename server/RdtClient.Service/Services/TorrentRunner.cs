@@ -405,52 +405,53 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
                     // Start the download process
                     var downloadClient = new DownloadClient(download, torrent, downloadPath);
-
-                    if (downloadClient.Type == Data.Enums.DownloadClient.Symlink)
-                    {
-                        downloadTasks.Add(StartDownload(download, torrent, downloadClient));
-                        await Task.Delay(100);
-                    }
-
-                    await Task.WhenAll(downloadTasks);
-
-                    if (_aggregatedDownloadResults.Count > 0)
-                    {
-                        await downloads.UpdateRemoteIdRange(_aggregatedDownloadResults);
-                    }
-
-                    if (_aggregatedDownloadErrors.Count > 0)
-                    {
-                        await downloads.UpdateErrorInRange(_aggregatedDownloadErrors);
-                    }
-
-                    // if (ActiveDownloadClients.TryAdd(download.DownloadId, downloadClient))
+                    
+                    // if (downloadClient.Type == Data.Enums.DownloadClient.Symlink)
                     // {
-                    //     Log($"Starting download", download, torrent);
-                    //
-                    //     try
-                    //     {
-                    //         var remoteId = await downloadClient.Start();
-                    //
-                    //         if (String.IsNullOrWhiteSpace(remoteId))
-                    //         {
-                    //             throw new($"No remote ID received from download client");
-                    //         }
-                    //
-                    //         Log($"Received ID {remoteId}", download, torrent);
-                    //
-                    //         if (download.RemoteId != remoteId)
-                    //         {
-                    //             await downloads.UpdateRemoteId(download.DownloadId, remoteId);
-                    //         }
-                    //     }
-                    //     catch (Exception ex)
-                    //     {
-                    //         LogError($"Unable to start download: {ex.Message}", download, torrent);
-                    //     }
-                    //
-                    //     Log($"Started download", download, torrent);
+                    //     downloadTasks.Add(StartDownload(download, torrent, downloadClient));
+                    //     await Task.Delay(100);
                     // }
+                    //
+                    // Log($"Started download", download, torrent);
+                    // await Task.WhenAll(downloadTasks);
+                    //
+                    // if (_aggregatedDownloadResults.Count > 0)
+                    // {
+                    //     await downloads.UpdateRemoteIdRange(_aggregatedDownloadResults);
+                    // }
+                    //
+                    // if (_aggregatedDownloadErrors.Count > 0)
+                    // {
+                    //     await downloads.UpdateErrorInRange(_aggregatedDownloadErrors);
+                    // }
+
+                    if (ActiveDownloadClients.TryAdd(download.DownloadId, downloadClient))
+                    {
+                        Log($"Starting download", download, torrent);
+                    
+                        try
+                        {
+                            var remoteId = await downloadClient.Start();
+                    
+                            if (String.IsNullOrWhiteSpace(remoteId))
+                            {
+                                throw new($"No remote ID received from download client");
+                            }
+                    
+                            Log($"Received ID {remoteId}", download, torrent);
+                    
+                            if (download.RemoteId != remoteId)
+                            {
+                                await downloads.UpdateRemoteId(download.DownloadId, remoteId);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogError($"Unable to start download: {ex.Message}", download, torrent);
+                        }
+                    
+                        Log($"Started download", download, torrent);
+                    }
                 }
 
                 // Check if there are any unpacks that are queued and can be started.
