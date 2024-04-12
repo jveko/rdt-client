@@ -21,16 +21,17 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         try
         {
             var filePath = new FileInfo(path);
-
             var rcloneMountPath = Settings.Get.DownloadClient.RcloneMountPath.TrimEnd(['\\', '/']);
             var fileName = filePath.Name;
             var fileExtension = filePath.Extension;
             var fileNameWithoutExtension = fileName.Replace(fileExtension, "");
-            var pathWithoutFileName = path.Replace(fileName, "").TrimEnd(['\\', '/']);
-            var searchPath = Path.Combine(rcloneMountPath, pathWithoutFileName);
+            var pathWithoutFileName = path.TrimEnd(['\\', '/']).Split("/")[0].Replace(fileExtension, "");
+            var searchPath = rcloneMountPath;
             var destFile = new FileInfo(destinationPath);
+            // var destDirParent = destFile.Directory!.Parent!;
+            // var destDirPlain = destFile.Name.TrimEnd(['\\', '/']).Replace(destFile.Extension, "");
+            // var destDir = new DirectoryInfo(Path.Combine(destDirParent.FullName, destDirPlain));
             var destDir = destFile.Directory!;
-
             List<String> unWantedExtensions =
             [
                 "zip",
@@ -54,6 +55,13 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var potentialFilePaths = new List<String>();
 
             var directoryInfo = new DirectoryInfo(searchPath);
+
+            if (Directory.Exists(destDir.FullName))
+            {
+                DownloadComplete?.Invoke(this, new());
+
+                return destDir.FullName;
+            }
 
             while (directoryInfo.Parent != null)
             {
@@ -85,7 +93,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
 
                 foreach (var potentialFilePath in potentialFilePaths)
                 {
-                    var potentialFilePathWithFileName = Path.Combine(potentialFilePath, fileNameWithoutExtension);
+                    var potentialFilePathWithFileName = Path.Combine(potentialFilePath, pathWithoutFileName);
 
                     _logger.Debug($"Searching {potentialFilePathWithFileName}...");
 
